@@ -9,41 +9,44 @@ import titles as t
 import menu as m
 import restaurant as rt
 import crud_restaurante as cr
+import i18n
 
 
 def menu_pedidos_categoria(categoria_nombre):
     """Muestra los platos de una categoria y permite seleccionar plato y cantidad."""
     disponibles = m.mostrar_categoria(categoria_nombre)
     if not disponibles:
-        input("\nPresione ENTER para volver al Menú Principal...")
+        input(i18n.tr("press_enter_back"))
         return
 
     while True:
-        cod = input("\nIngrese el código del plato que desea agregar (o 0 para volver): ").strip()
+        cod = input(i18n.tr("enter_code")).strip()
         if cod == "0":
             break
 
         if cod not in m.PLATOS or m.PLATOS[cod]["categoria"] != categoria_nombre:
-            print("Código no válido para esta categoría. Intente nuevamente.")
+            print(i18n.tr("invalid_code_cat"))
             continue
 
         plato_sel = m.PLATOS[cod]
-        print(f"Ha seleccionado: {plato_sel['nombre']} (${plato_sel['precio']:,})".replace(",", "."))
+        nombre_sel = i18n.dish_name(cod, plato_sel["nombre"])
+        precio_fmt = f"${plato_sel['precio']:,}".replace(",", ".")
+        print(i18n.tr("selected", name=nombre_sel, price=precio_fmt))
         
         try:
-            cant = int(input("Ingrese la cantidad que desea: ").strip())
+            cant = int(input(i18n.tr("enter_qty")).strip())
             if cant <= 0:
-                print("La cantidad debe ser mayor a 0.")
+                print(i18n.tr("qty_gt_zero"))
                 continue
         except ValueError:
-            print("Por favor ingrese un número entero válido.")
+            print(i18n.tr("qty_int"))
             continue
 
         exito, msg = rt.agregar_producto(cod, cant)
         print(f"\n>> {msg}")
 
-        seguir = input("¿Desea agregar otro plato de esta sección? (s/n): ").strip().lower()
-        if seguir != "s":
+        seguir = input(i18n.tr("add_more")).strip()
+        if not i18n.is_yes(seguir):
             break
 
 
@@ -107,28 +110,29 @@ def main():
     t.banner_bienvenida()
 
     # Confirmacion de ingreso al sistema
-    ingresar = input("¿Deseas ingresar a nuestro menú? (s/n): ").strip().lower()
-    if ingresar != "s":
-        print("\nGracias por visitarnos. ¡Hasta pronto!")
+    ingresar = input(i18n.tr("ask_enter")).strip()
+    if not i18n.is_yes(ingresar):
+        print(i18n.tr("bye_visit"))
         return
 
     while True:
         estado_bd = cr.obtener_estado_conexion()
         print("\n" + "=" * 45)
-        print("             MENÚ PRINCIPAL            ")
+        print(i18n.tr("main_title"))
         print(f"       [{estado_bd}]")
         print("=" * 45)
-        print("1. Menú de Desayunos")
-        print("2. Menú de Almuerzos")
-        print("3. Menú de Postres")
-        print("4. Ver Orden y Total")
-        print("5. Confirmar Pedido y Facturar")
-        print("6. Cancelar Orden Actual")
-        print("7. Panel de Base de Datos y CRUD (Admin)")
-        print("0. Salir del Sistema")
+        print(i18n.tr("opt_breakfast"))
+        print(i18n.tr("opt_lunch"))
+        print(i18n.tr("opt_dessert"))
+        print(i18n.tr("opt_view_order"))
+        print(i18n.tr("opt_invoice"))
+        print(i18n.tr("opt_cancel"))
+        print(i18n.tr("opt_admin"))
+        print(i18n.tr("opt_lang"))
+        print(i18n.tr("opt_exit"))
         print("=" * 45)
 
-        opcion = input("Seleccione una opción (0-7): ").strip()
+        opcion = input(i18n.tr("select_option")).strip()
 
         match opcion:
             case "1":
@@ -143,29 +147,33 @@ def main():
             case "4":
                 t.limpiar_pantalla()
                 rt.ver_orden()
-                input("\nPresione ENTER para continuar...")
+                input(i18n.tr("press_enter"))
             case "5":
                 t.limpiar_pantalla()
                 if not rt.orden_actual:
-                    print("\nNo tiene platos en la orden para facturar.")
-                    input("\nPresione ENTER para continuar...")
+                    print(i18n.tr("order_empty"))
+                    input(i18n.tr("press_enter"))
                 else:
-                    cliente = input("Ingrese el nombre del cliente: ").strip()
+                    cliente = input(i18n.tr("enter_name")).strip()
                     if not cliente:
-                        cliente = "Consumidor Final"
+                        cliente = i18n.tr("default_customer")
                     rt.generar_factura(cliente)
-                    input("\nPresione ENTER para continuar...")
+                    input(i18n.tr("press_enter"))
             case "6":
                 rt.cancelar_orden()
-                input("\nPresione ENTER para continuar...")
+                input(i18n.tr("press_enter"))
             case "7":
                 menu_administrador()
+            case "8":
+                i18n.toggle_lang()
+                print(i18n.tr("lang_changed"))
+                input(i18n.tr("press_enter"))
             case "0":
                 cr.terminar()
-                print("\n¡Gracias por preferir Restaurante Gourmet! Que tenga un feliz día.")
+                print(i18n.tr("goodbye"))
                 break
             case _:
-                print("\nOpción no válida. Por favor elija un número entre 0 y 7.")
+                print(i18n.tr("invalid_option"))
 
 
 if __name__ == "__main__":

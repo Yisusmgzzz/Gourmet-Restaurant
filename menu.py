@@ -6,6 +6,7 @@
 # ALEX JAVIER CAMPO SUAREZ
 
 import titles as t
+import i18n
 
 # Base de datos de platos por categoria
 # Estructura: codigo, nombre, precio, descripcion, categoria
@@ -177,7 +178,7 @@ def mostrar_categoria(categoria_filtro):
     elif categoria_filtro == "Postre":
         t.desserts_menu()
 
-    print(f"{'Cod':<5}{'Plato':<30}{'Precio':>10}")
+    print(f"{i18n.tr('col_code'):<5}{i18n.tr('col_dish'):<30}{i18n.tr('col_price'):>10}")
     print("-" * 47)
     
     encontrados = []
@@ -185,12 +186,14 @@ def mostrar_categoria(categoria_filtro):
         if datos["categoria"] == categoria_filtro:
             encontrados.append(cod)
             precio_fmt = f"${datos['precio']:,}".replace(",", ".")
-            print(f"[{cod:>2}] {datos['nombre']:<28} {precio_fmt:>12}")
-            print(f"      -> {datos['descripcion']}")
+            nombre = i18n.dish_name(cod, datos['nombre'])
+            desc = i18n.dish_desc(cod, datos['descripcion'])
+            print(f"[{cod:>2}] {nombre:<28} {precio_fmt:>12}")
+            print(f"      -> {desc}")
             print()
 
     if not encontrados:
-        print("  Actualmente no hay platos disponibles en esta categoría.")
+        print(i18n.tr("no_dishes_cat"))
         print()
 
     print("-" * 47)
